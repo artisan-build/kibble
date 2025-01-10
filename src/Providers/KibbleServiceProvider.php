@@ -1,5 +1,7 @@
 <?php
 
+namespace ArtisanBuild\Kibble\Providers;
+
 use Illuminate\Support\ServiceProvider;
 
 class KibbleServiceProvider extends ServiceProvider
