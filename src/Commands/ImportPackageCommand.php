@@ -19,19 +19,20 @@ class ImportPackageCommand extends Command
 
         $process = Process::run(implode(' ', ['git', 'status', '--porcelain']));
 
-
-        if (!$process->successful()) {
+        if (! $process->successful()) {
             $this->error('Failed to check Git status.');
+
             return self::FAILURE;
         }
 
-        if (!empty($process->output())) {
+        if (! empty($process->output())) {
             $this->error('Git repository is not clean. Please commit or stash changes.');
+
             return self::FAILURE;
         }
 
         $url = $this->argument('url') ?? text('Enter the repository URL');
-        $name = $this->argument('name') ??text('Enter the package name (used as directory)');
+        $name = $this->argument('name') ?? text('Enter the package name (used as directory)');
         $path = $this->argument('path') ?? text('Enter the package path (leave blank to use the name)', default: $name);
 
         $this->info("Cloning $url into packages/$path...");
