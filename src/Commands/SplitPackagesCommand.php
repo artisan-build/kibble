@@ -22,8 +22,8 @@ class SplitPackagesCommand extends Command
 
             $commands = [
                 ['git', 'subtree', 'split', '--prefix=packages/'. last(explode('/', $package)), '-b', 'split-branch'],
-                ['git', 'push', $json['name'], 'split-branch:main', '--force'],
-                ['git', 'branch', '-d', 'split-branch'],
+                ['git', 'push', 'https://github.com/' . $json['name'], 'split-branch:main', '--force'],
+                ['git', 'branch', '-D', 'split-branch'],
             ];
 
             foreach ($commands as $command) {
