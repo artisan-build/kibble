@@ -21,7 +21,7 @@ class SplitPackagesCommand extends Command
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
             $commands = [
-                ['git', 'subtree', 'split', '--prefix='.$package, '-b', 'split-branch'],
+                ['git', 'subtree', 'split', '--prefix=packages/'. last(explode('/', $package)), '-b', 'split-branch'],
                 ['git', 'push', $json['name'], 'split-branch:main', '--force'],
                 ['git', 'branch', '-d', 'split-branch'],
             ];
