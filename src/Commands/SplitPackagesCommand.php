@@ -14,13 +14,14 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
+        $username = config('kibble.github_username');
         $token = config('kibble.github_token');
 
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            $repoUrl = "https://{$token}@github.com/{$json['name']}.git";
+            $repoUrl = "https://{$username}:{$token}@github.com/{$json['name']}.git";
 
             Process::run("git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all");
 
