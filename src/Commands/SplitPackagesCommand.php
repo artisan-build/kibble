@@ -14,21 +14,11 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
-
-        $token = config('kibble.github_token');
-        $username = config('kibble.github_username');
-
-        if (strlen($token) < 40) {
-            $this->error('Invalid (GH_TOKEN) in the environment variables.');
-
-            return self::FAILURE;
-        }
-
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            $repoUrl = "https://{$username}:{$token}@github.com/{$json['name']}.git";
+            $repoUrl = "https://github.com/{$json['name']}.git";
 
             $commands = [
                 ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
