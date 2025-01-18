@@ -17,8 +17,9 @@ class SplitPackagesCommand extends Command
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
 
-            if (!isset($json['name'])) {
+            if (! isset($json['name'])) {
                 $this->error("Could not find the 'name' field in the composer.json of '{$package}'");
+
                 continue;
             }
 
@@ -36,8 +37,9 @@ class SplitPackagesCommand extends Command
             foreach ($commands as $command) {
                 $process = Process::run(implode(' ', $command));
 
-                if (!$process->successful()) {
+                if (! $process->successful()) {
                     $this->error($process->errorOutput());
+
                     return self::FAILURE;
                 }
             }
