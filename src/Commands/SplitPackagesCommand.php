@@ -15,7 +15,7 @@ class SplitPackagesCommand extends Command
     public function handle(): int
     {
 
-        $this->info('Token: ' . config('kibble.github_token'));
+        $this->info('Token: '.config('kibble.github_token'));
 
         /*
         $ghToken = env('GH_TOKEN'); // Pull token from the environment variable
