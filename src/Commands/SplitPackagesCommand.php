@@ -15,12 +15,10 @@ class SplitPackagesCommand extends Command
     public function handle(): int
     {
 
-        $this->info('Token: '.config('kibble.github_token'));
 
-        /*
-        $ghToken = env('GH_TOKEN'); // Pull token from the environment variable
+        $token = config('kibble.github_token');
 
-        if (! $ghToken) {
+        if (! $token) {
             $this->error('GitHub token (GH_TOKEN) not found in environment variables.');
 
             return self::FAILURE;
@@ -30,7 +28,7 @@ class SplitPackagesCommand extends Command
             $json = json_decode(File::get("{$package}/composer.json"), true);
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            $repoUrl = "https://{$ghToken}@github.com/{$json['name']}";
+            $repoUrl = "https://{$token}@github.com/{$json['name']}.git";
 
             $commands = [
                 ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
@@ -51,7 +49,6 @@ class SplitPackagesCommand extends Command
             $this->info("Done updating '{$json['name']}'");
         }
 
-        */
         return self::SUCCESS;
 
     }
