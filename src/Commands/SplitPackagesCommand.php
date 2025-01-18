@@ -35,7 +35,7 @@ class SplitPackagesCommand extends Command
             ];
 
             foreach ($commands as $command) {
-                $process = Process::run(implode(' ', $command));
+                $process = Process::env(['GH_TOKEN' => config('kibble.github_token')])->run(implode(' ', $command));
 
                 if (! $process->successful()) {
                     $this->error($process->errorOutput());
