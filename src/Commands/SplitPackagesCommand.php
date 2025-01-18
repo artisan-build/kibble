@@ -14,6 +14,15 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
+        /** @phpstan-ignore-next-line  */
+        $token = env('GITHUB_TOKEN'); // Get token from environment
+
+        if (! $token) {
+            $this->error('GitHub token (GITHUB_TOKEN) not found in environment variables.');
+
+            return self::FAILURE;
+        }
+
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
 
@@ -25,10 +34,10 @@ class SplitPackagesCommand extends Command
 
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            // Repository URL (no token needed when using actions/checkout)
+            // Repository URL (no username/password in URL since we use configured token)
             $repoUrl = "https://github.com/{$json['name']}.git";
 
-            // Ensure clean git configuration
+            // Clear conflicting git configurations
             Process::run("git config -l | grep 'http\\..*\\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all");
 
             // Define the commands
