@@ -14,17 +14,33 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
-        $username = config('kibble.github_username');
-        $token = config('kibble.github_token');
+        /** @phpstan-ignore-next-line  */
+        $token = env('GH_TOKEN'); // Use the GitHub token from the environment
+
+        if (! $token) {
+            $this->error('GitHub token (GH_TOKEN) not found in environment variables.');
+
+            return self::FAILURE;
+        }
 
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
+
+            if (! isset($json['name'])) {
+                $this->error("Could not find the 'name' field in the composer.json of '{$package}'");
+
+                continue;
+            }
+
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            $repoUrl = "https://{$username}:{$token}@github.com/{$json['name']}.git";
+            // Construct the repository URL with the token
+            $repoUrl = "https://{$token}@github.com/{$json['name']}.git";
 
-            Process::run("git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all");
+            // Ensure clean git configuration
+            Process::run("git config -l | grep 'http\\..*\\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all");
 
+            // Define the commands
             $commands = [
                 ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
                 ['git', 'push', $repoUrl, 'split-branch:main', '--force'],
@@ -45,6 +61,5 @@ class SplitPackagesCommand extends Command
         }
 
         return self::SUCCESS;
-
     }
 }
