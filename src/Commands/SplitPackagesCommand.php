@@ -14,33 +14,19 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
-        /** @phpstan-ignore-next-line  */
-        $token = env('GITHUB_TOKEN'); // Get token from environment
-
-        if (! $token) {
-            $this->error('GitHub token (GITHUB_TOKEN) not found in environment variables.');
-
-            return self::FAILURE;
-        }
-
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
 
-            if (! isset($json['name'])) {
+            if (!isset($json['name'])) {
                 $this->error("Could not find the 'name' field in the composer.json of '{$package}'");
-
                 continue;
             }
 
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            // Repository URL (no username/password in URL since we use configured token)
             $repoUrl = "https://github.com/{$json['name']}.git";
 
-            // Clear conflicting git configurations
-            Process::run("git config -l | grep 'http\\..*\\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all");
-
-            // Define the commands
+            // Define commands to execute
             $commands = [
                 ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
                 ['git', 'push', $repoUrl, 'split-branch:main', '--force'],
@@ -50,9 +36,8 @@ class SplitPackagesCommand extends Command
             foreach ($commands as $command) {
                 $process = Process::run(implode(' ', $command));
 
-                if (! $process->successful()) {
+                if (!$process->successful()) {
                     $this->error($process->errorOutput());
-
                     return self::FAILURE;
                 }
             }
