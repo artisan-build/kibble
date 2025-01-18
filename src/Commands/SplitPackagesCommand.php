@@ -15,7 +15,6 @@ class SplitPackagesCommand extends Command
     public function handle(): int
     {
 
-
         $token = config('kibble.github_token');
 
         if (! $token) {
