@@ -18,8 +18,8 @@ class SplitPackagesCommand extends Command
         $token = config('kibble.github_token');
         $username = config('kibble.github_username');
 
-        if (! $token) {
-            $this->error('GitHub token (GH_TOKEN) not found in environment variables.');
+        if (strlen($token) < 40) {
+            $this->error('Invalid (GH_TOKEN) in the environment variables.');
 
             return self::FAILURE;
         }
