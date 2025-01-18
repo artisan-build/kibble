@@ -14,15 +14,24 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
-        $packages = [];
+        /** @phpstan-ignore-next-line  - This command is called from GitHub Actions so we need to reach for env directly*/
+        $ghToken = env('GH_TOKEN'); // Pull token from the environment variable
+
+        if (! $ghToken) {
+            $this->error('GitHub token (GH_TOKEN) not found in environment variables.');
+
+            return self::FAILURE;
+        }
 
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
+            $repoUrl = "https://{$ghToken}@github.com/{$json['name']}";
+
             $commands = [
                 ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
-                ['git', 'push', 'https://github.com/'.$json['name'], 'split-branch:main', '--force'],
+                ['git', 'push', $repoUrl, 'split-branch:main', '--force'],
                 ['git', 'branch', '-D', 'split-branch'],
             ];
 
@@ -37,7 +46,6 @@ class SplitPackagesCommand extends Command
             }
 
             $this->info("Done updating '{$json['name']}'");
-
         }
 
         return self::SUCCESS;
