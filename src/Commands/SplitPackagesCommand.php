@@ -14,7 +14,10 @@ class SplitPackagesCommand extends Command
 
     public function handle(): int
     {
-        /** @phpstan-ignore-next-line  - This command is called from GitHub Actions so we need to reach for env directly*/
+        /** @phpstan-ignore-next-line  */
+        $this->info(env('GH_TOKEN'));
+
+        /*
         $ghToken = env('GH_TOKEN'); // Pull token from the environment variable
 
         if (! $ghToken) {
@@ -48,6 +51,8 @@ class SplitPackagesCommand extends Command
             $this->info("Done updating '{$json['name']}'");
         }
 
+        */
         return self::SUCCESS;
+
     }
 }
