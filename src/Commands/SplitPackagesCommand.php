@@ -23,6 +23,8 @@ class SplitPackagesCommand extends Command
             $repoUrl = "https://{$token}:github.com/{$json['name']}.git";
 
             $commands = [
+                ['git', 'config', '--global', '--unset', 'http.proxy'],
+                ['git', 'config', '--global', '--unset', 'https.proxy'],
                 ['git', 'config', '--unset-all', 'http.https://github.com/.extraheader'],
                 ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
                 ['git', 'push', $repoUrl, 'split-branch:main', '--force'],
