@@ -20,7 +20,7 @@ class SplitPackagesCommand extends Command
             $json = json_decode(File::get("{$package}/composer.json"), true);
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
-            $repoUrl = "https://token:{$token}:github.com/{$json['name']}.git";
+            $repoUrl = "https://{$token}:github.com/{$json['name']}.git";
 
             $commands = [
                 ['git', 'config', '--unset-all', 'http.https://github.com/.extraheader'],
