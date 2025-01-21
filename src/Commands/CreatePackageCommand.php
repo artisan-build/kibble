@@ -48,8 +48,6 @@ class CreatePackageCommand extends Command
 
         $this->info($create);
 
-        $create = 'https://github.com/artisan-build/packagist';
-
         $this->info("Created {$create}");
 
         if (! filter_var($create, FILTER_VALIDATE_URL)) {
