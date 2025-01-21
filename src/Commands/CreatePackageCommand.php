@@ -50,12 +50,6 @@ class CreatePackageCommand extends Command
 
         $this->info("Created {$create}");
 
-        if (! filter_var($create, FILTER_VALIDATE_URL)) {
-            $this->error('We expected GitHub to return the URL of a new repo but got this instead: '.$create);
-
-            return self::FAILURE;
-        }
-
         $this->call('kibble:import-package', [
             'name' => $slug,
             'path' => $slug,
