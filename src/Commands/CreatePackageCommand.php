@@ -27,7 +27,7 @@ class CreatePackageCommand extends Command
         ];
 
         $packages = GH::repo()->option('--json name')->list(config('kibble.organization'));
-        $names = collect(json_decode($packages, true))->map(fn ($package) => $package['name']);
+        $names = collect(json_decode((string) $packages, true))->map(fn ($package) => $package['name']);
 
         $description = text('What does this package do?');
 

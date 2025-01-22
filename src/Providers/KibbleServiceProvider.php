@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 
 class KibbleServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/kibble.php', 'kibble');

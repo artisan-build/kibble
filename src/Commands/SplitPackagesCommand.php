@@ -29,7 +29,7 @@ class SplitPackagesCommand extends Command
 
             // Define commands to execute
             $commands = [
-                ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', $package)), '-b', 'split-branch'],
+                ['git', 'subtree', 'split', '--prefix=packages/'.last(explode('/', (string) $package)), '-b', 'split-branch'],
                 ['git', 'push', $repoUrl, 'split-branch:main', '--force'],
                 ['git', 'branch', '-D', 'split-branch'],
             ];
