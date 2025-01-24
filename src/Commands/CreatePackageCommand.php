@@ -53,6 +53,8 @@ class CreatePackageCommand extends Command
         $clone = Process::path(base_path('packages'))
             ->run('git clone https://github.com/'.config('kibble.organization').'/'.$slug);
 
+        $ungit = Process::path(base_path("packages/{$slug}"))->run('rm -rf .git');
+
         // Run string replacements to rename files and set up the correct class names, etc.
         $readme = File::get(base_path("packages/{$slug}/README.md"));
         File::put(base_path("packages/{$slug}/README.md"), Str::replace(
