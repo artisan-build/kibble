@@ -50,11 +50,8 @@ class CreatePackageCommand extends Command
 
         $this->info("Created {$create}");
 
-        $this->call('kibble:import-package', [
-            'name' => $slug,
-            'path' => $slug,
-            'url' => $create,
-        ]);
+        $clone = Process::path(base_path('packages'))
+            ->run('git clone https://github.com/'.config('kibble.organization').'/'.$slug);
 
         // Run string replacements to rename files and set up the correct class names, etc.
         $readme = File::get(base_path("packages/{$slug}/README.md"));
