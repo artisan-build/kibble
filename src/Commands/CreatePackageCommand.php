@@ -38,22 +38,20 @@ class CreatePackageCommand extends Command
         }
 
         $create = GH::repo(implode('/', [config('kibble.organization'), $slug]))
+            ->path(base_path('packages'))
             ->option('--description "'.$description.'"')
             ->option('--disable-issues')
             ->option('--disable-wiki')
             ->option('--public')
             ->option('--homepage '.config('kibble.homepage'))
             ->option('--template '.config('kibble.template'))
+            ->option('--clone')
             ->create();
 
         $this->info($create);
 
         $this->info("Created {$create}");
 
-        $clone = Process::path(base_path('packages'))
-            ->run('git clone https://github.com/'.config('kibble.organization').'/'.$slug);
-
-        $ungit = Process::path(base_path("packages/{$slug}"))->run('rm -rf .git');
 
         // Run string replacements to rename files and set up the correct class names, etc.
         $readme = File::get(base_path("packages/{$slug}/README.md"));
@@ -87,6 +85,8 @@ class CreatePackageCommand extends Command
         File::move("packages/{$slug}/src/Providers/SkeletonServiceProvider.php", "packages/{$slug}/src/Providers/{$pascal}ServiceProvider.php");
 
         File::move("packages/{$slug}/config/skeleton.php", "packages/{$slug}/config/{$slug}.php");
+
+        $ungit = Process::path(base_path("packages/{$slug}"))->run('rm -rf .git');
 
         $this->info(Process::run('composer require '.config('kibble.organization')."/{$slug}:*")->output());
 
