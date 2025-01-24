@@ -52,7 +52,6 @@ class CreatePackageCommand extends Command
 
         $this->info("Created {$create}");
 
-
         // Run string replacements to rename files and set up the correct class names, etc.
         $readme = File::get(base_path("packages/{$slug}/README.md"));
         File::put(base_path("packages/{$slug}/README.md"), Str::replace(
