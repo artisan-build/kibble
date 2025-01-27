@@ -47,32 +47,30 @@ class CreatePackageCommand extends Command
             ->option('--template '.config('kibble.template'))
             ->create();
 
-        $repoUrl = 'https://github.com/'.config('kibble.organization')."/{$slug}/archive/refs/heads/main.zip";
-        $tempZip = base_path("packages/{$slug}.zip");
-        $finalDir = base_path("packages/{$slug}");
+        $remote_zip = 'https://github.com/'.config('kibble.organization')."/{$slug}/archive/refs/heads/main.zip";
 
-        Process::run("wget -q {$repoUrl} -O {$tempZip}");
+        Process::path(base_path('packages'))->run("wget {$remote_zip}");
+
+        $local_zip = base_path('packages/main.zip');
 
         $zip = new ZipArchive;
-        if ($zip->open($tempZip) === true) {
+
+        if ($zip->open($local_zip) === true) {
             $zip->extractTo(base_path('packages'));
             $zip->close();
         } else {
             $this->error('Failed to extract the package zip file.');
-            File::delete($tempZip);
+            File::delete($local_zip);
 
             return self::FAILURE;
         }
 
-        $extractedDir = base_path("packages/{$slug}-main");
-        if (! File::moveDirectory($extractedDir, $finalDir)) {
-            $this->error("Failed to move files to {$finalDir}");
+        $original = base_path("packages/{$slug}-main");
+        $final = base_path("packages/{$slug}");
 
-            return self::FAILURE;
-        }
+        File::moveDirectory($original, $final);
 
-        File::delete($tempZip);
-        File::deleteDirectory($extractedDir);
+        File::delete($local_zip);
 
         $this->info("Package {$slug} pulled down and cleaned successfully.");
 
