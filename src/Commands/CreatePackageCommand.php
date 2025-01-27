@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
+use ZipArchive;
 
 use function Laravel\Prompts\text;
 
@@ -38,15 +39,42 @@ class CreatePackageCommand extends Command
         }
 
         $create = GH::repo(implode('/', [config('kibble.organization'), $slug]))
-            ->path(base_path('packages'))
             ->option('--description "'.$description.'"')
             ->option('--disable-issues')
             ->option('--disable-wiki')
             ->option('--public')
             ->option('--homepage '.config('kibble.homepage'))
             ->option('--template '.config('kibble.template'))
-            ->option('--clone')
             ->create();
+
+        $repoUrl = 'https://github.com/'.config('kibble.organization')."/{$slug}/archive/refs/heads/main.zip";
+        $tempZip = base_path("packages/{$slug}.zip");
+        $finalDir = base_path("packages/{$slug}");
+
+        Process::run("wget -q {$repoUrl} -O {$tempZip}");
+
+        $zip = new ZipArchive;
+        if ($zip->open($tempZip) === true) {
+            $zip->extractTo(base_path('packages'));
+            $zip->close();
+        } else {
+            $this->error('Failed to extract the package zip file.');
+            File::delete($tempZip);
+
+            return self::FAILURE;
+        }
+
+        $extractedDir = base_path("packages/{$slug}-main");
+        if (! File::moveDirectory($extractedDir, $finalDir)) {
+            $this->error("Failed to move files to {$finalDir}");
+
+            return self::FAILURE;
+        }
+
+        File::delete($tempZip);
+        File::deleteDirectory($extractedDir);
+
+        $this->info("Package {$slug} pulled down and cleaned successfully.");
 
         $this->info($create);
 
