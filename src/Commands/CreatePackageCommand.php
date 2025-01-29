@@ -3,10 +3,14 @@
 namespace ArtisanBuild\Kibble\Commands;
 
 use ArtisanBuild\GH\GH;
+use ArtisanBuild\Kibble\Package;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
+use JsonException;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Exceptions\Request\RequestException;
 use ZipArchive;
 
 use function Laravel\Prompts\text;
@@ -17,6 +21,11 @@ class CreatePackageCommand extends Command
 
     protected $description = 'Create a new package and add it to GitHub and Packagist';
 
+    /**
+     * @throws FatalRequestException
+     * @throws RequestException
+     * @throws JsonException
+     */
     public function handle(): int
     {
         $name = text('What are we naming this package?');
@@ -114,6 +123,20 @@ class CreatePackageCommand extends Command
         $ungit = Process::path(base_path("packages/{$slug}"))->run('rm -rf .git');
 
         $this->info(Process::run('composer require '.config('kibble.organization')."/{$slug}:*")->output());
+
+        $this->info("Attempting to add {$slug} to Packagist");
+
+        $package = Package::fromDirectory(base_path("packages/{$slug}"));
+
+        if (! is_null($package->packagist())) {
+            $this->info("{$slug} appears to already be in Packagist");
+        }
+
+        if ($package->addToPackagist()) {
+            $this->info('Added to Packagist');
+        } else {
+            $this->error('Failed to add to Packagist');
+        }
 
         return self::SUCCESS;
     }
