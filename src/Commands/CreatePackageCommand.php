@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use JsonException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
+use Throwable;
 use ZipArchive;
 
 use function Laravel\Prompts\text;
@@ -25,6 +26,7 @@ class CreatePackageCommand extends Command
      * @throws FatalRequestException
      * @throws RequestException
      * @throws JsonException
+     * @throws Throwable
      */
     public function handle(): int
     {
@@ -58,7 +60,8 @@ class CreatePackageCommand extends Command
 
         $remote_zip = 'https://github.com/'.config('kibble.organization')."/{$slug}/archive/refs/heads/main.zip";
 
-        Process::path(base_path('packages'))->run("wget {$remote_zip}");
+        retry(10, static fn() => Process::path(base_path('packages'))->run("wget {$remote_zip}"), 2000);
+
 
         $local_zip = base_path('packages/main.zip');
 
