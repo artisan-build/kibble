@@ -60,8 +60,15 @@ class CreatePackageCommand extends Command
 
         $remote_zip = 'https://github.com/'.config('kibble.organization')."/{$slug}/archive/refs/heads/main.zip";
 
-        retry(10, static fn() => Process::path(base_path('packages'))->run("wget {$remote_zip}"), 2000);
+        // The problem here is that the zip file exists immediately when a repository is initialized, but
+        // it is not complete until all of the files from the template have been added to the repository. This can take
+        // a few seconds. There's no clean way to just loop and retry this without downloading the zip file
+        // several times. Since this is internally facing only, simply sleeping a little probably makes sense.
+        $this->info('Waiting for a while to make sure the zip file we download has everything we need.');
+        sleep(30);
+        $this->info('Getting back to work.');
 
+        retry(10, static fn () => Process::path(base_path('packages'))->run("wget {$remote_zip}"), 2000);
 
         $local_zip = base_path('packages/main.zip');
 
@@ -123,7 +130,7 @@ class CreatePackageCommand extends Command
 
         File::move("packages/{$slug}/config/skeleton.php", "packages/{$slug}/config/{$slug}.php");
 
-        $ungit = Process::path(base_path("packages/{$slug}"))->run('rm -rf .git');
+        File::put("packages/{$slug}/.gitattributes", File::get(__DIR__.'/../../stubs/gitattributes.txt'));
 
         $this->info(Process::run('composer require '.config('kibble.organization')."/{$slug}:*")->output());
 
@@ -133,6 +140,8 @@ class CreatePackageCommand extends Command
 
         if (! is_null($package->packagist())) {
             $this->info("{$slug} appears to already be in Packagist");
+
+            return self::SUCCESS;
         }
 
         if ($package->addToPackagist()) {
