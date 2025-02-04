@@ -68,7 +68,7 @@ class CreatePackageCommand extends Command
         sleep(30);
         $this->info('Getting back to work.');
 
-        retry(10, static fn () => Process::path(base_path('packages'))->run("wget {$remote_zip}"), 2000);
+        retry(10, static fn () => Process::path(base_path('packages'))->run("curl -LO {$remote_zip}"), 2000);
 
         $local_zip = base_path('packages/main.zip');
 
