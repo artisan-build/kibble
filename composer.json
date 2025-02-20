@@ -5,7 +5,7 @@
 	"license": "MIT",
 	"require": {
         "artisan-build/gh": "*",
-        "illuminate/support": "^11.36"
+        "illuminate/support": "^11.9"
     },
     "require-dev": {
         "larastan/larastan": "^v3.0.2",
