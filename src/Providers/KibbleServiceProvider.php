@@ -5,13 +5,15 @@ namespace ArtisanBuild\Kibble\Providers;
 use ArtisanBuild\Kibble\Commands\CreatePackageCommand;
 use ArtisanBuild\Kibble\Commands\ImportPackageCommand;
 use ArtisanBuild\Kibble\Commands\LinkCommand;
+use ArtisanBuild\Kibble\Commands\LinkFluxCommand;
 use ArtisanBuild\Kibble\Commands\SplitPackagesCommand;
 use ArtisanBuild\Kibble\Commands\UnlinkCommand;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 class KibbleServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/kibble.php', 'kibble');
@@ -24,6 +26,7 @@ class KibbleServiceProvider extends ServiceProvider
             ImportPackageCommand::class,
             SplitPackagesCommand::class,
             LinkCommand::class,
+            LinkFluxCommand::class,
             UnlinkCommand::class,
         ]);
 
