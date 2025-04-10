@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ArtisanBuild\Kibble\Commands;
 
-use ArtisanBuild\Kibble\Actions\KibbleGitIgnore;
 use Illuminate\Console\Command;
 
 class LinkFluxCommand extends Command
@@ -27,11 +26,10 @@ class LinkFluxCommand extends Command
         if (
             isset($composer['repositories']['flux-pro'])
         ) {
-            $this->info("Flux Pro already in composer.json");
+            $this->info('Flux Pro already in composer.json');
 
             return Command::SUCCESS;
         }
-
 
         $composer['repositories']['flux-pro'] = [
             'type' => 'composer',
@@ -46,7 +44,7 @@ class LinkFluxCommand extends Command
             ).($trailing_newline ? "\n" : '')
         );
 
-        $this->info("Flux Pro added to composer.json");
+        $this->info('Flux Pro added to composer.json');
 
         return Command::SUCCESS;
     }
