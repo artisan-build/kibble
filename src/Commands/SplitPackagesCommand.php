@@ -35,7 +35,12 @@ class SplitPackagesCommand extends Command
             ];
 
             foreach ($commands as $command) {
-                $process = Process::env(['GH_TOKEN' => config('kibble.github_token')])->run(implode(' ', $command));
+                // We want to rely on our local git credentials if running locally.
+                $process = Process::env(app()->isLocal() ? [] : [
+                    'GIT_ASKPASS' => 'echo',
+                    'GIT_USERNAME' => config('kibble.github_username'),
+                    'GIT_PASSWORD' => config('kibble.github_token'),
+                ])->run(implode(' ', $command));
 
                 if (! $process->successful()) {
                     $this->error($process->errorOutput());
