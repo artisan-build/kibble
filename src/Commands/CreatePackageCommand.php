@@ -9,6 +9,7 @@ use ArtisanBuild\Kibble\Package;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use JsonException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -67,7 +68,7 @@ class CreatePackageCommand extends Command
         // a few seconds. There's no clean way to just loop and retry this without downloading the zip file
         // several times. Since this is internally facing only, simply sleeping a little probably makes sense.
         $this->info('Waiting for a while to make sure the zip file we download has everything we need.');
-        \Illuminate\Support\Sleep::sleep(30);
+        Sleep::sleep(30);
         $this->info('Getting back to work.');
 
         retry(10, static fn () => Process::path(base_path('packages'))->run("curl -LO {$remote_zip}"), 2000);
