@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'path' => base_path('packages'),
     'organization' => env('GH_ORGANIZATION', 'artisan-build'),

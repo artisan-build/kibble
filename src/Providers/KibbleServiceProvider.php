@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArtisanBuild\Kibble\Providers;
 
 use ArtisanBuild\Kibble\Commands\CreatePackageCommand;

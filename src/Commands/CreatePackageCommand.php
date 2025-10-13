@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArtisanBuild\Kibble\Commands;
 
 use ArtisanBuild\GH\GH;
@@ -65,7 +67,7 @@ class CreatePackageCommand extends Command
         // a few seconds. There's no clean way to just loop and retry this without downloading the zip file
         // several times. Since this is internally facing only, simply sleeping a little probably makes sense.
         $this->info('Waiting for a while to make sure the zip file we download has everything we need.');
-        sleep(30);
+        \Illuminate\Support\Sleep::sleep(30);
         $this->info('Getting back to work.');
 
         retry(10, static fn () => Process::path(base_path('packages'))->run("curl -LO {$remote_zip}"), 2000);
