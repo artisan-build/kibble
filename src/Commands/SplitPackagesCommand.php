@@ -10,12 +10,15 @@ use Illuminate\Support\Facades\Process;
 
 class SplitPackagesCommand extends Command
 {
-    protected $signature = 'kibble:split';
+    protected $signature = 'kibble:split {package? : The package name to split (e.g., adverbs, kibble). If omitted, all packages will be split.}';
 
     protected $description = 'Update all of the individual repositories for the packages';
 
     public function handle(): int
     {
+        $packageFilter = $this->argument('package');
+        $packagesProcessed = 0;
+
         foreach (File::directories(base_path('packages')) as $package) {
             $json = json_decode(File::get("{$package}/composer.json"), true);
 
@@ -24,6 +27,16 @@ class SplitPackagesCommand extends Command
 
                 continue;
             }
+
+            // If a package filter is provided, skip packages that don't match
+            if ($packageFilter !== null) {
+                $packageName = last(explode('/', (string) $json['name']));
+                if ($packageName !== $packageFilter) {
+                    continue;
+                }
+            }
+
+            $packagesProcessed++;
 
             $this->info("Splitting package at '{$package}' into repository '{$json['name']}'");
 
@@ -53,6 +66,20 @@ class SplitPackagesCommand extends Command
 
             $this->info("Done updating '{$json['name']}'");
         }
+
+        if ($packageFilter !== null && $packagesProcessed === 0) {
+            $this->error("No package found matching '{$packageFilter}'");
+
+            return self::FAILURE;
+        }
+
+        if ($packagesProcessed === 0) {
+            $this->warn('No packages were processed');
+
+            return self::SUCCESS;
+        }
+
+        $this->info("Successfully processed {$packagesProcessed} package(s)");
 
         return self::SUCCESS;
     }
