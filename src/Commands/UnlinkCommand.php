@@ -15,7 +15,7 @@ class UnlinkCommand extends Command
 
     public function handle(): int
     {
-        app(KibbleGitIgnore::class)();
+        resolve(KibbleGitIgnore::class)();
 
         if (! file_exists('kibble.json')) {
             $this->error('kibble.json file not found');
