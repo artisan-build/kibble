@@ -15,6 +15,59 @@ This is the package that makes our package manager work.
 
 ## Usage
 
+### Splitting packages
+
+`php artisan kibble:split` mirrors each `packages/*` directory to its own read-only repository on
+GitHub. The monorepo is always the source of truth — split repositories are force-synced from it.
+
+```bash
+# Split every package (force-syncs each split repo's main branch)
+php artisan kibble:split
+
+# Split a single package
+php artisan kibble:split adverbs
+```
+
+### Lockstep release tagging
+
+Pass `--tag` to also tag every split repository with a release version, following the Laravel
+`illuminate/*` lockstep model — every split repo is tagged with the same version on every release,
+even packages with no changes:
+
+```bash
+# Force-sync main AND create the tag on every split repo
+php artisan kibble:split --tag=v1.2.0
+
+# Tag a single package
+php artisan kibble:split adverbs --tag=v1.2.0
+```
+
+Notes:
+
+- **Idempotent re-runs.** The tag is pushed with `--force`. `git subtree split` synthesizes new
+  commit SHAs on each run, so a re-run of a failed or partial release simply re-points the tag at
+  the new split commit rather than erroring that the tag already exists. (Re-publishing an
+  already-released version is still discouraged, but the mirror model permits it.)
+- **No local tag is created.** The tag is pushed via a ref-spec (`split-branch:refs/tags/<tag>`),
+  so no tag is written into the monorepo checkout. This avoids colliding with the monorepo's own
+  release tag that triggered the split in CI.
+- **Partial failures.** The command stops on the first failed sub-command, which can leave a
+  release partially tagged. Because tag pushes are force-idempotent, simply re-run the same command
+  to finish the release.
+- **CI requirements.** `git subtree split` needs full history, so check out with `fetch-depth: 0`.
+  Split repositories must already exist. Outside the local environment, pushes authenticate with the
+  `GH_USERNAME` / `GH_TOKEN` credentials (see Configuration).
+
+Example release workflow step (run on a monorepo tag push):
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+- run: composer install --no-interaction --prefer-dist
+- run: php artisan kibble:split --tag=${{ github.ref_name }}
+```
+
 ## Memberware
 
 This package is part of our internal toolkit and is optimized for our own purposes. We do not accept issues or PRs
