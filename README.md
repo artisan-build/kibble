@@ -28,6 +28,31 @@ php artisan kibble:split
 php artisan kibble:split adverbs
 ```
 
+### Distribution cleaning (default)
+
+A split repository exists to be published, so by default `kibble:split` does **not** copy each
+package's `composer.json` verbatim. It produces a *distribution* `composer.json` for the split that
+strips dev-only wiring which is load-bearing inside the monorepo but wrong in the published package:
+
+1. The top-level `version` field is removed so Packagist derives the version from the git tag rather
+   than a hardcoded value (a stale `version` field breaks tag-derived/lockstep versioning).
+2. `repositories` entries whose `type` is `path` are removed — their `../sibling` urls do not exist
+   for consumers and otherwise print `The url supplied for the path (../<sibling>) repository does
+   not exist` on every `composer require`. Non-`path` repositories are preserved, and the
+   `repositories` key is dropped entirely when nothing remains.
+
+Anything else in `composer.json` is left untouched. The strip is applied to the **split artifact
+only** — the monorepo's own `packages/<pkg>/composer.json` on disk is never modified. Mechanically,
+the cleaned content is committed in a detached worktree *after* `git subtree split` and *before* the
+pushes, so both `main` and any `--tag` ref point at the cleaned commit.
+
+Pass `--no-clean` to opt out and publish each `composer.json` verbatim (raw passthrough):
+
+```bash
+# Publish composer.json exactly as it appears in the monorepo
+php artisan kibble:split adverbs --no-clean
+```
+
 ### Lockstep release tagging
 
 Pass `--tag` to also tag every split repository with a release version, following the Laravel
