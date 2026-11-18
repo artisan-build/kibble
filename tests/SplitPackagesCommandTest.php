@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use ArtisanBuild\Kibble\Commands\SplitPackagesCommand;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Process;
 
 /*
@@ -12,7 +13,20 @@ use Illuminate\Support\Facades\Process;
  * blanket Process::fake() without needing a real worktree on disk.
  */
 describe('kibble:split lockstep tagging (raw passthrough)', function (): void {
-    beforeEach(fn () => Process::fake());
+    beforeEach(function (): void {
+        $this->fixtureRepo = __DIR__.'/../build/split-test-'.uniqid();
+        foreach (['packagist', 'kibble'] as $package) {
+            $directory = $this->fixtureRepo.'/packages/'.$package;
+            (new Filesystem)->ensureDirectoryExists($directory);
+            file_put_contents($directory.'/composer.json', json_encode(['name' => 'artisan-build/'.$package]));
+        }
+        app()->setBasePath($this->fixtureRepo);
+        Process::fake();
+    });
+
+    afterEach(function (): void {
+        (new Filesystem)->deleteDirectory($this->fixtureRepo);
+    });
 
     it('pushes a tag ref to the split repo for the filtered package when --tag is set', function (): void {
         $this->artisan('kibble:split', ['package' => 'packagist', '--tag' => 'v1.2.0', '--no-clean' => true])
